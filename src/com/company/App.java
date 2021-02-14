@@ -31,9 +31,10 @@ public class App extends JFrame {
         this.setLocationRelativeTo(null);
         this.pack();
 
+        panelTaskList.setLayout(new BoxLayout(panelTaskList, BoxLayout.Y_AXIS));
+
         // run select all to fetch all tasks from db
         getTasks();
-
         // print all tasks to page
         printTasks();
 
@@ -80,7 +81,9 @@ public class App extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // on add button click
-                addTask();
+
+                // get task values
+                addTask(taskName.getText(), taskDescription.getText(), dueDate.getText(), container);
             }
         });
 
@@ -88,23 +91,30 @@ public class App extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // on cancel button click, return tasks panel
-                cancelAddTask(container);
+                closeCreateTask(container);
             }
         });
     }
 
-    public void cancelAddTask(JPanel container) {
+    public void closeCreateTask(JPanel container) {
+        // remove create task and bring back tasks pane
         this.remove(container);
         tasksPanel.setVisible(true);
         this.validate();
         this.repaint();
+        // run select all to fetch all tasks from db
+        getTasks();
+        // print all tasks to page
+        printTasks();
     }
 
-    public void addTask() {
+    public void addTask(String taskName, String taskDescription, String dueDate, JPanel container) {
         // create new task in sqlite db
 
         // sql statement to add task
-        String sql = "SELECT * FROM ToDo";
+        String sql = "INSERT INTO ToDo (taskName, taskDescription, isComplete, creationDate, updatedDate, dueDate)" +
+                " VALUES('"+ taskName + "', '" + taskDescription + "', 0, " +
+                "datetime('now','localtime'), datetime('now','localtime'), '" + dueDate + "');";
 
         // try connection, return error if fails
         try  {
@@ -114,6 +124,9 @@ public class App extends JFrame {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+
+        // return to main page and get new tasks
+        closeCreateTask(container);
     }
 
     // return connection to sqlite db "ToDo.db" in project root
@@ -134,6 +147,9 @@ public class App extends JFrame {
     public void getTasks() {
         // sql statement to select all records
         String sql = "SELECT * FROM ToDo";
+
+        // clear tasks list first
+        tasks.clear();
 
         // try connection, return error if fails
         try (Connection conn = this.connect();
@@ -160,13 +176,17 @@ public class App extends JFrame {
     }
 
     public void printTasks() {
+        // clear panel first
+        panelTaskList.removeAll();
         // add tasks to scrollable panel
         for (Task t : tasks)
         {
+            System.out.println(t.getTaskName());
             // add a task
             panelTaskList.add(t.drawTask());
         }
         panelTaskList.validate();
+        panelTaskList.repaint();
     }
 
     public static void main(String[] args) {
