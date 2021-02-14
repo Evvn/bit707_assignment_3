@@ -17,9 +17,10 @@ public class App extends JFrame {
 
     private JButton buttonAddTask;
     private JPanel panelMain;
+    private JPanel panelTaskList;
+    private JPanel tasksPanel;
     private JLabel labelTitle;
     private JScrollPane scrollTasks;
-    private JPanel panelTaskList;
 
     public App(String title) {
         super(title);
@@ -40,10 +41,79 @@ public class App extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // on add button click
+                createTask();
+            }
+        });
+    }
+
+    public void createTask() {
+        JPanel container = new JPanel();
+        JLabel nameLabel = new JLabel("Task name");
+        JTextField taskName = new JTextField();
+        JLabel descriptionLabel = new JLabel("Task description");
+        JTextField taskDescription = new JTextField();
+        JLabel dueLabel = new JLabel("Due at... (yyyy-mm-dd hh:mm)");
+        JTextField dueDate = new JTextField();
+        JButton cancelButton = new JButton("Cancel");
+        JButton addButton = new JButton("Create");
+
+        // set container layout
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        // add to container
+        container.add(nameLabel);
+        container.add(taskName);
+        container.add(descriptionLabel);
+        container.add(taskDescription);
+        container.add(dueLabel);
+        container.add(dueDate);
+        container.add(cancelButton);
+        container.add(addButton);
+
+        // hide tasks page
+        tasksPanel.setVisible(false);
+        // show controls to add task
+        this.add(container);
+        this.validate();
+
+        // create listeners for create and cancel
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // on add button click
+                addTask();
             }
         });
 
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // on cancel button click, return tasks panel
+                cancelAddTask(container);
+            }
+        });
+    }
 
+    public void cancelAddTask(JPanel container) {
+        this.remove(container);
+        tasksPanel.setVisible(true);
+        this.validate();
+        this.repaint();
+    }
+
+    public void addTask() {
+        // create new task in sqlite db
+
+        // sql statement to add task
+        String sql = "SELECT * FROM ToDo";
+
+        // try connection, return error if fails
+        try  {
+            Connection conn = this.connect();
+            Statement stmt = conn.createStatement();
+            stmt.executeQuery(sql);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     // return connection to sqlite db "ToDo.db" in project root
@@ -83,9 +153,6 @@ public class App extends JFrame {
 
                 Task task = new Task(taskNumber, taskName, taskDescription, isComplete, creationDate, updatedDate, dueDate);
                 tasks.add(task);
-
-                // iterate over each record and print ln with data
-//                System.out.println(rs.getInt("taskNumber") + "\t" + rs.getString("taskName"));
             }
         } catch (SQLException | ParseException e) {
             System.out.println(e.getMessage());

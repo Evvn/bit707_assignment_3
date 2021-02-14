@@ -36,12 +36,14 @@ public class Task {
         // task title
         JLabel labelTitle = new JLabel(taskName);
         // task options
+        JButton buttonView = new JButton("View");
         JButton buttonEdit = new JButton("Edit");
         JButton buttonDelete = new JButton("Delete");
 
         // add to panel
         panelTask.add(checkIsComplete);
         panelTask.add(labelTitle);
+        panelTask.add(buttonView);
         panelTask.add(buttonEdit);
         panelTask.add(buttonDelete);
 
