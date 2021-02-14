@@ -42,20 +42,16 @@ public class Main {
     public static void main(String[] args) {
         Main app = new Main();
 
-        JFrame frame = new JFrame();
-        frame.setTitle("Hello quack");
+        // app container
+        JFrame appContainer = new JFrame();
+        appContainer.setTitle("To Do List");
+        appContainer.setSize(new Dimension(500, 850));
+        appContainer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        appContainer.setLocationRelativeTo(null);
+        appContainer.setResizable(false);
+        appContainer.setVisible(true);
 
-        frame.setSize(new Dimension(500, 850));
-
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        frame.setLocationRelativeTo(null);
-
-        frame.setResizable(false);
-
-        frame.setVisible(true);
-
-        // run select all
+        // run select all tasks
         app.selectAll();
     }
 }
