@@ -129,6 +129,27 @@ public class App extends JFrame {
         closeCreateTask(container);
     }
 
+    public void deleteTask(int taskNumber) {
+        // delete task from sqlite db
+
+        // sql statement to add task
+        String sql = "DELETE FROM ToDo WHERE taskNumber = " + taskNumber + ";";
+
+        // try connection, return error if fails
+        try  {
+            Connection conn = this.connect();
+            Statement stmt = conn.createStatement();
+            stmt.executeQuery(sql);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        // run select all to fetch all tasks from db
+        getTasks();
+        // print all tasks to page
+        printTasks();
+    }
+
     // return connection to sqlite db "ToDo.db" in project root
     private Connection connect() {
         String url = "jdbc:sqlite:ToDo.db";
@@ -181,9 +202,38 @@ public class App extends JFrame {
         // add tasks to scrollable panel
         for (Task t : tasks)
         {
-            System.out.println(t.getTaskName());
-            // add a task
-            panelTaskList.add(t.drawTask());
+            // task panel
+            // task container
+            JPanel panelTask = new JPanel();
+            panelTask.setLayout(new FlowLayout());
+            // complete checkbox
+            JCheckBox checkIsComplete = new JCheckBox();
+            // task title
+            JLabel labelTitle = new JLabel(t.getTaskName());
+            // task options
+            JButton buttonView = new JButton("View");
+            JButton buttonEdit = new JButton("Edit");
+            JButton buttonDelete = new JButton("Delete");
+
+            // add to panel
+            panelTask.add(checkIsComplete);
+            panelTask.add(labelTitle);
+            panelTask.add(buttonView);
+            panelTask.add(buttonEdit);
+            panelTask.add(buttonDelete);
+
+            // delete button event listener
+            buttonDelete.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // on delete click, remove task
+                    System.out.println("delete task: " + t.getTaskNumber());
+                    deleteTask(t.getTaskNumber());
+                }
+            });
+
+            // add the task
+            panelTaskList.add(panelTask);
         }
         panelTaskList.validate();
         panelTaskList.repaint();
