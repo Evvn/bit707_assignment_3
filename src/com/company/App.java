@@ -150,6 +150,31 @@ public class App extends JFrame {
         printTasks();
     }
 
+    public void setIsComplete(int taskNumber, boolean isComplete) {
+        // update if task is complete in db
+
+        // turn bool to int for update in sqlite
+        int sqlBool = 0;
+        if (isComplete) { sqlBool = 1; }
+
+        // sql statement to edit task
+        String sql = "UPDATE ToDo SET isComplete = " + sqlBool + " WHERE taskNumber = " + taskNumber + ";";
+
+        // try connection, return error if fails
+        try  {
+            Connection conn = this.connect();
+            Statement stmt = conn.createStatement();
+            stmt.executeQuery(sql);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        // run select all to fetch all tasks from db
+        getTasks();
+        // print all tasks to page
+        printTasks();
+    }
+
     // return connection to sqlite db "ToDo.db" in project root
     private Connection connect() {
         String url = "jdbc:sqlite:ToDo.db";
@@ -208,6 +233,7 @@ public class App extends JFrame {
             panelTask.setLayout(new FlowLayout());
             // complete checkbox
             JCheckBox checkIsComplete = new JCheckBox();
+            checkIsComplete.setSelected(t.isComplete());
             // task title
             JLabel labelTitle = new JLabel(t.getTaskName());
             // task options
@@ -232,6 +258,16 @@ public class App extends JFrame {
                 }
             });
 
+            // checked (completed) event listener
+            checkIsComplete.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // on checkbox
+                    System.out.println(checkIsComplete.isSelected() + " task: " + t.getTaskNumber());
+                    setIsComplete(t.getTaskNumber(), checkIsComplete.isSelected());
+                }
+            });
+
             // add the task
             panelTaskList.add(panelTask);
         }
@@ -240,8 +276,6 @@ public class App extends JFrame {
     }
 
     public static void main(String[] args) {
-//        App app = new App();
-
         JFrame frame = new App("To Do List");
         frame.setVisible(true);
     }
