@@ -1,6 +1,8 @@
 package com.company;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,10 +30,12 @@ public class App extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setContentPane(panelMain);
         this.setMinimumSize(new Dimension(375, 667));
+        this.setMaximumSize(new Dimension(375, 667));
         this.setLocationRelativeTo(null);
         this.pack();
 
         panelTaskList.setLayout(new BoxLayout(panelTaskList, BoxLayout.Y_AXIS));
+        scrollTasks.setPreferredSize(new Dimension(350, 547));
 
         // run select all to fetch all tasks from db
         getTasks();
@@ -55,8 +59,14 @@ public class App extends JFrame {
         JTextField taskDescription = new JTextField();
         JLabel dueLabel = new JLabel("Due at... (yyyy-mm-dd hh:mm)");
         JTextField dueDate = new JTextField();
+
+        // controls
+        JPanel panelButtons = new JPanel();
+        panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.X_AXIS));
         JButton cancelButton = new JButton("Cancel");
         JButton addButton = new JButton("Create");
+        panelButtons.add(cancelButton);
+        panelButtons.add(addButton);
 
         // set container layout
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
@@ -67,8 +77,7 @@ public class App extends JFrame {
         container.add(taskDescription);
         container.add(dueLabel);
         container.add(dueDate);
-        container.add(cancelButton);
-        container.add(addButton);
+        container.add(panelButtons);
 
         // hide tasks page
         tasksPanel.setVisible(false);
@@ -126,6 +135,85 @@ public class App extends JFrame {
         }
 
         // return to main page and get new tasks
+        closeCreateTask(container);
+    }
+
+    public void editTaskScreen(Task t) {
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+        // launch edit task panel (like create, pre-populated)
+        JPanel container = new JPanel();
+        JLabel nameLabel = new JLabel("Task name");
+        JTextField taskName = new JTextField(t.getTaskName());
+        JLabel descriptionLabel = new JLabel("Task description");
+        JTextField taskDescription = new JTextField(t.getTaskDescription());
+        JLabel dueLabel = new JLabel("Due at... (yyyy-mm-dd hh:mm)");
+        JTextField dueDate = new JTextField(df.format(t.getDueDate()));
+
+        // controls
+        JPanel panelButtons = new JPanel();
+        panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.X_AXIS));
+        JButton cancelButton = new JButton("Cancel");
+        JButton updateButton = new JButton("Update");
+        panelButtons.add(cancelButton);
+        panelButtons.add(updateButton);
+
+        // set container layout
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        // add to container
+        container.add(nameLabel);
+        container.add(taskName);
+        container.add(descriptionLabel);
+        container.add(taskDescription);
+        container.add(dueLabel);
+        container.add(dueDate);
+        container.add(panelButtons);
+
+        // hide tasks page
+        tasksPanel.setVisible(false);
+        // show controls to add task
+        this.add(container);
+        this.validate();
+
+        // create listeners for create and cancel
+        updateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // on update button click
+
+                // get task values
+                editTask(t, container, taskName.getText(), taskDescription.getText(), dueDate.getText());
+            }
+        });
+
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // on cancel button click, return tasks panel
+                // return to main page and refresh tasks
+                closeCreateTask(container);
+            }
+        });
+
+
+    }
+
+    public void editTask(Task t, JPanel container, String taskName, String taskDescription, String dueDate) {
+        // sql statement to edit task
+        String sql = "UPDATE ToDo SET taskName = '" + taskName + "', taskDescription = '" + taskDescription
+                + "', dueDate = '" + dueDate + "', updatedDate = datetime('now','localtime') WHERE taskNumber = "
+                + t.getTaskNumber() + ";";
+
+        // try connection, return error if fails
+        try  {
+            Connection conn = this.connect();
+            Statement stmt = conn.createStatement();
+            stmt.executeQuery(sql);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        // return to main page and refresh tasks
         closeCreateTask(container);
     }
 
@@ -230,23 +318,47 @@ public class App extends JFrame {
             // task panel
             // task container
             JPanel panelTask = new JPanel();
-            panelTask.setLayout(new FlowLayout());
+            panelTask.setLayout(new BorderLayout());
+
+            // Border border = new BorderFactory.createMatteBorder(1,1,1,2, Color.darkGray);
+            Border border = new LineBorder(Color.darkGray, 2, true);
+            panelTask.setBorder(border);
+
+            // panel for checkbox and title
+            JPanel panelTitle = new JPanel();
+            panelTitle.setLayout(new BoxLayout(panelTitle, BoxLayout.Y_AXIS));
             // complete checkbox
             JCheckBox checkIsComplete = new JCheckBox();
             checkIsComplete.setSelected(t.isComplete());
             // task title
             JLabel labelTitle = new JLabel(t.getTaskName());
+            panelTitle.add(checkIsComplete);
+            panelTitle.add(labelTitle);
+
             // task options
+            JPanel buttonsContainer = new JPanel();
+            buttonsContainer.setLayout(new BoxLayout(buttonsContainer, BoxLayout.Y_AXIS));
             JButton buttonView = new JButton("View");
             JButton buttonEdit = new JButton("Edit");
             JButton buttonDelete = new JButton("Delete");
+            buttonsContainer.add(buttonView);
+            buttonsContainer.add(buttonEdit);
+            buttonsContainer.add(buttonDelete);
 
             // add to panel
-            panelTask.add(checkIsComplete);
-            panelTask.add(labelTitle);
-            panelTask.add(buttonView);
-            panelTask.add(buttonEdit);
-            panelTask.add(buttonDelete);
+            panelTask.add(panelTitle, BorderLayout.WEST);
+            panelTask.add(buttonsContainer, BorderLayout.EAST);
+
+
+            // edit button event listener
+            buttonEdit.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // on edit click, launch edit task panel
+                    System.out.println("edit task: " + t.getTaskNumber());
+                    editTaskScreen(t);
+                }
+            });
 
             // delete button event listener
             buttonDelete.addActionListener(new ActionListener() {
