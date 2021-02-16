@@ -5,6 +5,9 @@ import java.awt.*;
 import java.util.Comparator;
 import java.util.Date;
 
+/**
+ * Task object used to store Task attributes and details
+ */
 public class Task {
 
     // task attribute fields
@@ -16,7 +19,16 @@ public class Task {
     private Date updatedDate;
     private Date dueDate;
 
-    // constructor
+    /**
+     * task creation
+     * @param num task number
+     * @param name task name
+     * @param description task description
+     * @param complete is task complete?
+     * @param createdAt date task is created
+     * @param updatedAt date task was last updated
+     * @param dueAt date task is due
+     */
     public Task(int num, String name, String description, boolean complete, Date createdAt, Date updatedAt, Date dueAt) {
         taskNumber = num;
         taskName = name;
@@ -27,39 +39,9 @@ public class Task {
         dueDate = dueAt;
     }
 
-    // generate task for gui
-    public JPanel drawTask() {
-        // task container
-        JPanel panelTask = new JPanel();
-        panelTask.setLayout(new FlowLayout());
-        // complete checkbox
-        JCheckBox checkIsComplete = new JCheckBox();
-        // task title
-        JLabel labelTitle = new JLabel(taskName);
-        // task options
-        JButton buttonView = new JButton("View");
-        JButton buttonEdit = new JButton("Edit");
-        JButton buttonDelete = new JButton("Delete");
-
-        // add to panel
-        panelTask.add(checkIsComplete);
-        panelTask.add(labelTitle);
-        panelTask.add(buttonView);
-        panelTask.add(buttonEdit);
-        panelTask.add(buttonDelete);
-
-        return panelTask;
-    }
-
-    // task methods
-    public void updateTask(String newTitle, String newDescription, Date newDueDate) {
-        // update task here
-    }
-
-    public void completeTask(boolean isComplete) {
-        // set task to complete or not here
-    }
-
+    /**
+     * sort method used when sorting list of tasks by due date
+     */
     static class SortByDue implements Comparator<Task> {
         @Override
         public int compare(Task a, Task b) {
@@ -67,6 +49,9 @@ public class Task {
         }
     }
 
+    /**
+     * sort method used when sorting list of tasks by creation date
+     */
     static class SortByCreation implements Comparator<Task> {
         @Override
         public int compare(Task a, Task b) {

@@ -14,6 +14,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * Main App container, handles most of UI of the app
+ */
 public class App extends JFrame {
     // all tasks
     ArrayList<Task> tasks = new ArrayList<>();
@@ -29,6 +32,11 @@ public class App extends JFrame {
     private String notSortedBy = "due";
     private DBConnection dbConnection = new DBConnection();
 
+    /**
+     * Main App class, initialises JFrame and task screen on app launch
+     * @param title the title of the application applied to the JFrame
+     *
+     */
     public App(String title) {
         super(title);
 
@@ -88,6 +96,10 @@ public class App extends JFrame {
         });
     }
 
+    /**
+     * Closes whatever JPanel container is open and reopens main tasks page
+     * @param container the container to close (eg. create task screen)
+     */
     public void closeScreen(JPanel container) {
         // remove create task and bring back tasks pane
         this.remove(container);
@@ -100,6 +112,9 @@ public class App extends JFrame {
         printTasks();
     }
 
+    /**
+     * open panel to create a new task and render controls
+     */
     public void createTask() {
         JPanel container = new JPanel();
         container.setPreferredSize(new Dimension(350, 500));
@@ -180,6 +195,13 @@ public class App extends JFrame {
         });
     }
 
+    /**
+     * add a new task to the list, update sql and task list
+     * @param taskName created task name
+     * @param taskDescription created task description
+     * @param dueDate created task due date
+     * @param container container that task was created in, to be closed
+     */
     public void addTask(String taskName, String taskDescription, String dueDate, JPanel container) {
         // create new task in sqlite db
         // sql statement to add task
@@ -197,6 +219,10 @@ public class App extends JFrame {
         closeScreen(container);
     }
 
+    /**
+     * open panel to view task details
+     * @param t task object being viewed
+     */
     public void viewTaskScreen(Task t) {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
@@ -256,6 +282,10 @@ public class App extends JFrame {
         });
     }
 
+    /**
+     * launches edit task JPanel
+     * @param t task object being edited
+     */
     public void editTaskScreen(Task t) {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
@@ -341,6 +371,14 @@ public class App extends JFrame {
         });
     }
 
+    /**
+     * creates sql query to edit/update task
+     * @param t task being updated
+     * @param container container that task was created in (to be closed)
+     * @param taskName updated task name
+     * @param taskDescription updated task description
+     * @param dueDate updated task due date
+     */
     public void editTask(Task t, JPanel container, String taskName, String taskDescription, String dueDate) {
         // sql statement to edit task
         String sql = "UPDATE ToDo SET taskName = '" + taskName + "', taskDescription = '" + taskDescription
@@ -357,6 +395,10 @@ public class App extends JFrame {
         closeScreen(container);
     }
 
+    /**
+     * deletes task from db and task list
+     * @param taskNumber task being deleted
+     */
     public void deleteTask(int taskNumber) {
         // delete task from sqlite db
 
@@ -376,6 +418,11 @@ public class App extends JFrame {
         printTasks();
     }
 
+    /**
+     * toggle task is completed (or not)
+     * @param taskNumber task being marked
+     * @param isComplete is complete or not?
+     */
     public void setIsComplete(int taskNumber, boolean isComplete) {
         // update if task is complete in db
 
@@ -398,7 +445,9 @@ public class App extends JFrame {
         printTasks();
     }
 
-    // select all records from ToDo db
+    /**
+     * select all tasks from sqlite database, write them to Task arraylist
+     */
     public void getTasks() {
         // sql statement to select all records
         String sql = "SELECT * FROM ToDo";
@@ -429,6 +478,9 @@ public class App extends JFrame {
         }
     }
 
+    /**
+     * print tasks stored in arraylist to ui, creates buttons to be used
+     */
     public void printTasks() {
         // clear panel first
         panelTaskList.removeAll();
@@ -532,6 +584,10 @@ public class App extends JFrame {
         panelTaskList.repaint();
     }
 
+    /**
+     * psvm boilerplate initialising main JFrame container
+     * @param args boilerplate
+     */
     public static void main(String[] args) {
         JFrame frame = new App("To Do List");
         frame.setVisible(true);

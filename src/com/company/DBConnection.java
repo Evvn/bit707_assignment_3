@@ -2,13 +2,25 @@ package com.company;
 
 import java.sql.*;
 
+/**
+ * Database connection class
+ */
 public class DBConnection {
     private final Connection connection;
 
+    /**
+     * sets sqlite db connection to be used by class
+     */
     public DBConnection() {
         connection = Connect();
     }
 
+    /**
+     * run sql query on sqlite db connected
+     * @param sqlStatement sql query to run
+     * @return returns ResultSet to iterate over if needed
+     * @throws SQLException exception for catching sql errors from sqlite
+     */
     public ResultSet RunSql(String sqlStatement) throws SQLException {
         String sql = sqlStatement;
 
@@ -23,6 +35,10 @@ public class DBConnection {
         }
     }
 
+    /**
+     * Creates new connection with sqlite db to be used for queries
+     * @return returns Connection object to store in Class (only want to init one per session)
+     */
     public Connection Connect() {
         String url = "jdbc:sqlite:ToDo.db";
         Connection conn = null;
@@ -36,6 +52,10 @@ public class DBConnection {
         return conn;
     }
 
+    /**
+     * psvm boilerplate
+     * @param args psvm boilerplate
+     */
     public static void main(String[] args) {
         DBConnection connection = new DBConnection();
     }
