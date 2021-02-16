@@ -12,7 +12,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
 
 public class App extends JFrame {
     // all tasks
@@ -25,6 +25,8 @@ public class App extends JFrame {
     private JLabel labelTitle;
     private JScrollPane scrollTasks;
     private JButton sortButton;
+    private String sortedBy = "creation";
+    private String notSortedBy = "due";
 
     public App(String title) {
         super(title);
@@ -37,7 +39,7 @@ public class App extends JFrame {
         this.pack();
 
         // make header
-        labelTitle.setText("<html><h2>Tasks</h2></html>");
+        labelTitle.setText("<html><h2>Tasks by " + sortedBy + " date</h2></html>");
 
         panelTaskList.setLayout(new BoxLayout(panelTaskList, BoxLayout.Y_AXIS));
         scrollTasks.setPreferredSize(new Dimension(350, 520));
@@ -52,6 +54,35 @@ public class App extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // on add button click
                 createTask();
+            }
+        });
+        sortButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // sort tasks by new sort string
+
+                if (sortedBy.equals("creation")) {
+                    // sort now by due date
+                    Collections.sort(tasks, new Task.SortByDue());
+                    // change sort strings
+                    sortedBy = "due";
+                    notSortedBy = "creation";
+                } else {
+                    // sort now by creation date
+                    Collections.sort(tasks, new Task.SortByCreation());
+                    // change sort strings
+                    sortedBy = "creation";
+                    notSortedBy = "due";
+                }
+
+                // make header
+                labelTitle.setText("<html><h2>Tasks by " + sortedBy + " date</h2></html>");
+
+                // also set sort button
+                sortButton.setText("Sort by "+ notSortedBy);
+
+                // reprint tasks
+                printTasks();
             }
         });
     }
@@ -70,6 +101,8 @@ public class App extends JFrame {
 
     public void createTask() {
         JPanel container = new JPanel();
+        container.setPreferredSize(new Dimension(350, 500));
+        container.setMaximumSize(new Dimension(350, 500));
         JLabel nameLabel = new JLabel("Task name");
         JTextField taskName = new JTextField();
         JLabel descriptionLabel = new JLabel("Task description");
@@ -109,7 +142,30 @@ public class App extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // on add button click
 
-                // get task values
+                // check if inputs are valid
+
+                // check date input
+                try {
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                    java.util.Date validDate = df.parse(dueDate.getText());
+                } catch (ParseException exc) {
+                    // date not valid
+                    JOptionPane.showMessageDialog(container, "Please input date in yyyy-mm-dd HH:ss format.\n" +
+                            "You input: " + dueDate.getText());
+                    return;
+                }
+                // check title is not empty
+                if (taskName.getText().isEmpty()) {
+                    JOptionPane.showMessageDialog(container, "Please input a valid title");
+                    return;
+                }
+                // check description is not empty
+                if (taskDescription.getText().isEmpty()) {
+                    JOptionPane.showMessageDialog(container, "Please input a valid description");
+                    return;
+                }
+
+                // add task with values
                 addTask(taskName.getText(), taskDescription.getText(), dueDate.getText(), container);
             }
         });
@@ -208,6 +264,9 @@ public class App extends JFrame {
 
         // launch edit task panel (like create, pre-populated)
         JPanel container = new JPanel();
+        container.setPreferredSize(new Dimension(350, 500));
+        container.setMaximumSize(new Dimension(350, 500));
+
         JLabel nameLabel = new JLabel("Task name");
         JTextField taskName = new JTextField(t.getTaskName());
         JLabel descriptionLabel = new JLabel("Task description");
@@ -246,6 +305,29 @@ public class App extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // on update button click
+
+                // check if inputs are valid
+
+                // check date input
+                try {
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                    java.util.Date validDate = df.parse(dueDate.getText());
+                } catch (ParseException exc) {
+                    // date not valid
+                    JOptionPane.showMessageDialog(container, "Please input date in yyyy-mm-dd HH:ss format.\n" +
+                            "You input: " + dueDate.getText());
+                    return;
+                }
+                // check title is not empty
+                if (taskName.getText().isEmpty()) {
+                    JOptionPane.showMessageDialog(container, "Please input a valid title");
+                    return;
+                }
+                // check description is not empty
+                if (taskDescription.getText().isEmpty()) {
+                    JOptionPane.showMessageDialog(container, "Please input a valid description");
+                    return;
+                }
 
                 // get task values
                 editTask(t, container, taskName.getText(), taskDescription.getText(), dueDate.getText());
@@ -355,13 +437,14 @@ public class App extends JFrame {
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                DateFormat createdDf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
                 // create Task objects and put in list
                 int taskNumber = rs.getInt("taskNumber");
                 String taskName = rs.getString("taskName");
                 String taskDescription = rs.getString("taskDescription");
                 boolean isComplete = (rs.getInt("isComplete") != 0);
-                java.util.Date creationDate = df.parse(rs.getString("creationDate"));
+                java.util.Date creationDate = createdDf.parse(rs.getString("creationDate"));
                 java.util.Date updatedDate = df.parse(rs.getString("updatedDate"));
                 java.util.Date dueDate = df.parse(rs.getString("dueDate"));
 
@@ -382,6 +465,8 @@ public class App extends JFrame {
             // task panel
             // task container
             JPanel panelTask = new JPanel();
+            panelTask.setPreferredSize(new Dimension(320, 100));
+            panelTask.setMaximumSize(new Dimension(320, 350));
             panelTask.setLayout(new BorderLayout());
             Border border = new LineBorder(Color.darkGray, 2, true);
             panelTask.setBorder(border);
@@ -391,7 +476,7 @@ public class App extends JFrame {
             panelSpacer.setLayout(new BorderLayout());
             panelSpacer.setBorder(new EmptyBorder(5,0,5,0));
 
-            // panel for checkbox and title
+            // panel for checkbox, title and date
             JPanel panelTitle = new JPanel();
             panelTitle.setLayout(new BoxLayout(panelTitle, BoxLayout.Y_AXIS));
 
@@ -399,12 +484,19 @@ public class App extends JFrame {
             JCheckBox checkIsComplete = new JCheckBox();
             checkIsComplete.setSelected(t.isComplete());
 
+            // due date
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            JLabel dueDate = new JLabel(df.format(t.getDueDate()));
+            dueDate.setBorder(new EmptyBorder(0,10,0,0));
+
             // formatted task title
             JLabel labelTitle = new JLabel("<html><h3>" + t.getTaskName() + "</h3></html>");
+            labelTitle.setMaximumSize(new Dimension(180, 100));
             labelTitle.setBorder(new EmptyBorder(0,10,0,0));
 
             panelTitle.add(checkIsComplete);
             panelTitle.add(labelTitle);
+            panelTitle.add(dueDate);
 
             // task options
             JPanel buttonsContainer = new JPanel();
@@ -424,8 +516,7 @@ public class App extends JFrame {
             buttonView.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    // on vie click, launch detailed view panel
-                    System.out.println("view task: " + t.getTaskNumber());
+                    // on view click, launch detailed view panel
                     viewTaskScreen(t);
                 }
             });
@@ -435,7 +526,6 @@ public class App extends JFrame {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     // on edit click, launch edit task panel
-                    System.out.println("edit task: " + t.getTaskNumber());
                     editTaskScreen(t);
                 }
             });
@@ -445,7 +535,6 @@ public class App extends JFrame {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     // on delete click, remove task
-                    System.out.println("delete task: " + t.getTaskNumber());
                     deleteTask(t.getTaskNumber());
                 }
             });
@@ -455,7 +544,6 @@ public class App extends JFrame {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     // on checkbox
-                    System.out.println(checkIsComplete.isSelected() + " task: " + t.getTaskNumber());
                     setIsComplete(t.getTaskNumber(), checkIsComplete.isSelected());
                 }
             });
@@ -467,6 +555,7 @@ public class App extends JFrame {
             panelTaskList.add(panelSpacer);
         }
         panelTaskList.validate();
+        panelTaskList.revalidate();
         panelTaskList.repaint();
     }
 

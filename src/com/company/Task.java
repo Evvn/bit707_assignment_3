@@ -2,6 +2,7 @@ package com.company;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Comparator;
 import java.util.Date;
 
 public class Task {
@@ -57,6 +58,20 @@ public class Task {
 
     public void completeTask(boolean isComplete) {
         // set task to complete or not here
+    }
+
+    static class SortByDue implements Comparator<Task> {
+        @Override
+        public int compare(Task a, Task b) {
+            return a.getDueDate().compareTo(b.getDueDate());
+        }
+    }
+
+    static class SortByCreation implements Comparator<Task> {
+        @Override
+        public int compare(Task a, Task b) {
+            return a.getCreationDate().compareTo(b.getCreationDate());
+        }
     }
 
     // generate getters and setters
