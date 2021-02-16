@@ -27,6 +27,7 @@ public class App extends JFrame {
     private JButton sortButton;
     private String sortedBy = "creation";
     private String notSortedBy = "due";
+    private DBConnection dbConnection = new DBConnection();
 
     public App(String title) {
         super(title);
@@ -181,19 +182,15 @@ public class App extends JFrame {
 
     public void addTask(String taskName, String taskDescription, String dueDate, JPanel container) {
         // create new task in sqlite db
-
         // sql statement to add task
         String sql = "INSERT INTO ToDo (taskName, taskDescription, isComplete, creationDate, updatedDate, dueDate)" +
                 " VALUES('"+ taskName + "', '" + taskDescription + "', 0, " +
                 "datetime('now','localtime'), datetime('now','localtime'), '" + dueDate + "');";
 
-        // try connection, return error if fails
-        try  {
-            Connection conn = this.connect();
-            Statement stmt = conn.createStatement();
-            stmt.executeQuery(sql);
+        try {
+            dbConnection.RunSql(sql);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
         }
 
         // return to main page and get new tasks
@@ -350,13 +347,10 @@ public class App extends JFrame {
                 + "', dueDate = '" + dueDate + "', updatedDate = datetime('now','localtime') WHERE taskNumber = "
                 + t.getTaskNumber() + ";";
 
-        // try connection, return error if fails
-        try  {
-            Connection conn = this.connect();
-            Statement stmt = conn.createStatement();
-            stmt.executeQuery(sql);
+        try {
+            dbConnection.RunSql(sql);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
         }
 
         // return to main page and refresh tasks
@@ -370,12 +364,10 @@ public class App extends JFrame {
         String sql = "DELETE FROM ToDo WHERE taskNumber = " + taskNumber + ";";
 
         // try connection, return error if fails
-        try  {
-            Connection conn = this.connect();
-            Statement stmt = conn.createStatement();
-            stmt.executeQuery(sql);
+        try {
+            dbConnection.RunSql(sql);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
         }
 
         // run select all to fetch all tasks from db
@@ -394,33 +386,16 @@ public class App extends JFrame {
         // sql statement to edit task
         String sql = "UPDATE ToDo SET isComplete = " + sqlBool + " WHERE taskNumber = " + taskNumber + ";";
 
-        // try connection, return error if fails
-        try  {
-            Connection conn = this.connect();
-            Statement stmt = conn.createStatement();
-            stmt.executeQuery(sql);
+        try {
+            dbConnection.RunSql(sql);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println(e);
         }
 
         // run select all to fetch all tasks from db
         getTasks();
         // print all tasks to page
         printTasks();
-    }
-
-    // return connection to sqlite db "ToDo.db" in project root
-    private Connection connect() {
-        String url = "jdbc:sqlite:ToDo.db";
-        Connection conn = null;
-
-        // try to connect to db, if fail print error
-        try {
-            conn = DriverManager.getConnection(url);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return conn;
     }
 
     // select all records from ToDo db
@@ -432,9 +407,7 @@ public class App extends JFrame {
         tasks.clear();
 
         // try connection, return error if fails
-        try (Connection conn = this.connect();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (ResultSet rs = dbConnection.RunSql(sql)) {
             while (rs.next()) {
                 DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
                 DateFormat createdDf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
