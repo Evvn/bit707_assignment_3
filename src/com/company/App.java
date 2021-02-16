@@ -147,26 +147,35 @@ public class App extends JFrame {
     public void viewTaskScreen(Task t) {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
-        // launch edit task panel (like create, pre-populated)
+        // launch view task panel (like create, pre-populated)
         JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.setPreferredSize(new Dimension(350, 500));
+        container.setMaximumSize(new Dimension(350, 500));
+        container.setBorder(new EmptyBorder(50,0,0,50));
+
         JLabel nameLabel = new JLabel("Task name");
-        JTextField taskName = new JTextField(t.getTaskName());
+        JLabel taskName = new JLabel("<html><h2>" + t.getTaskName() + "</h2></html>");
+        taskName.setBorder(new EmptyBorder(0,0,20,0));
+
         JLabel descriptionLabel = new JLabel("Task description");
-        JTextArea taskDescription = new JTextArea(t.getTaskDescription());
-        taskDescription.setRows(5);
-        JLabel dueLabel = new JLabel("Due at... (yyyy-mm-dd hh:mm)");
-        JTextField dueDate = new JTextField(df.format(t.getDueDate()));
+        JLabel taskDescription = new JLabel("<html><p>" + t.getTaskDescription() + "</p></html>");
+        taskDescription.setBorder(new EmptyBorder(0,0,20,0));
+
+        JLabel dueLabel = new JLabel("Due at");
+        JLabel dueDate = new JLabel(df.format(t.getDueDate()));
+        dueDate.setBorder(new EmptyBorder(0,0,10,0));
+
+        JLabel updatedLabel = new JLabel("Last updated");
+        JLabel updatedDate = new JLabel(df.format(t.getUpdatedDate()));
+        updatedDate.setBorder(new EmptyBorder(0,0,20,0));
 
         // controls
         JPanel panelButtons = new JPanel();
         panelButtons.setLayout(new BoxLayout(panelButtons, BoxLayout.X_AXIS));
-        JButton cancelButton = new JButton("Cancel");
-        JButton updateButton = new JButton("Update");
-        panelButtons.add(cancelButton);
-        panelButtons.add(updateButton);
+        JButton backButton = new JButton("Back");
+        panelButtons.add(backButton);
 
-        // set container layout
-        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         // add to container
         container.add(nameLabel);
         container.add(taskName);
@@ -174,6 +183,8 @@ public class App extends JFrame {
         container.add(taskDescription);
         container.add(dueLabel);
         container.add(dueDate);
+        container.add(updatedLabel);
+        container.add(updatedDate);
         container.add(panelButtons);
 
         // hide tasks page
@@ -182,18 +193,7 @@ public class App extends JFrame {
         this.add(container);
         this.validate();
 
-        // create listeners for create and cancel
-        updateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // on update button click
-
-                // get task values
-                editTask(t, container, taskName.getText(), taskDescription.getText(), dueDate.getText());
-            }
-        });
-
-        cancelButton.addActionListener(new ActionListener() {
+        backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // on cancel button click, return tasks panel
